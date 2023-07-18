@@ -1,132 +1,107 @@
-<html lang="en">
-
-<head>
-    <!-- Required meta tags -->
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/css/bootstrap.min.css"
-        integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
-
-    <title>budaPlzCounter</title>
-</head>
-
-<body>
-    <div class="container " style="background-color:#c9e0f0">
-        <div class="row">
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <audio id="myaudio" src="{{mp3files}}" controls="controls"></audio>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <h1 id="all">總次數：</h1>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <h1 id="already">完成次數：</h1>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <h1 id="show">剩餘次數：</h1>
-            </div>
-        </div>
-
-        <div class="row">
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <label>目標次數設定</label>
-                <input type="number" id="goal" placeholder="基數設定" min="0" value="{{targetnum}}"
-                    onchange="onChangeHandler(this.value)">
-            </div>
-            <div class="col-sm-6 mx-auto d-flex justify-content-center">
-                <label>已完成次數設定</label>
-                <input type="number" id="done" placeholder="基數設定" min="0" value="{{finishednum}}"
-                    onchange="onChangeHandler2(this.value)">
-            </div>
+{% extends "base.html" %}
+{% block content %}
+<div class="container " style="background-color:#c9e0f0">
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <audio id="myaudio" src="{{mp3files}}" controls="controls"></audio>
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <h1 id="all">總次數：</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <h1 id="already">完成次數：</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <h1 id="show">剩餘次數：</h1>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <label>目標次數設定</label>
+            <input type="number" id="goal" placeholder="基數設定" min="0" value="{{targetnum}}"
+                onchange="onChangeHandler(this.value)">
+        </div>
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <label>已完成次數設定</label>
+            <input type="number" id="done" placeholder="基數設定" min="0" value="{{finishednum}}"
+                onchange="onChangeHandler2(this.value)">
+        </div>
+    </div>
+</div>
+{% endblock %}
+{% block script %}
+<script>
+    let headers = {
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+    }
+
+    let c = {{ targetnum }}-{{ finishednum }};
+    let all = {{ targetnum }};
+    let already = {{ finishednum }};
+
+    document.getElementById("all").innerHTML = "總次數：" + all;
+    document.getElementById("already").innerHTML = "完成次數：" + already;
+    document.getElementById("show").innerHTML = "剩餘次數：" + c;
 
 
-    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"
-        integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.3/dist/umd/popper.min.js"
-        integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49"
-        crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.3/dist/js/bootstrap.min.js"
-        integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy"
-        crossorigin="anonymous"></script>
-    <script>
-        let headers = {
-            "Content-Type": "application/json",
-            "Accept": "application/json",
-        }
+    let aud = document.getElementById("myaudio");
 
-        let c = {{ targetnum }}-{{ finishednum }};
-        let all = {{ targetnum }};
-        let already = {{ finishednum }};
+    function updatedata(all, already) {
+        let data = { "targetnumber": all, "finishednumber": already }
+        fetch('/changetargetnum', { method: "POST", headers: headers, body: JSON.stringify(data) }).then((respons) => {
+            return respons.json(); //取的資料後將資料傳給下一個 then
+        }).then((data) => {
+            console.log(data)
+        }).catch((error) => { // 當初出現錯誤時跑 catch
+            console.log(error);
+        })
+    }
 
-        document.getElementById("all").innerHTML = "總次數：" + all;
+    aud.onended = function () {
+        already = parseInt(already) + 1;
+        updatedata(all, already)
+
         document.getElementById("already").innerHTML = "完成次數：" + already;
+
+        c = all - already;
         document.getElementById("show").innerHTML = "剩餘次數：" + c;
 
-
-        let aud = document.getElementById("myaudio");
-
-        function updatedata(all, already) {
-            let data = { "targetnumber": all, "finishednumber": already }
-            fetch('/changetargetnum', { method: "POST", headers: headers, body: JSON.stringify(data) }).then((respons) => {
-                return respons.json(); //取的資料後將資料傳給下一個 then
-            }).then((data) => {
-                console.log(data)
-            }).catch((error) => { // 當初出現錯誤時跑 catch
-                console.log(error);
-            })
+        if (c != 0) {
+            aud.play();
         }
 
-        aud.onended = function () {
-            already = parseInt(already) + 1;
-            updatedata(all, already)
-
-            document.getElementById("already").innerHTML = "完成次數：" + already;
-
-            c = all - already;
-            document.getElementById("show").innerHTML = "剩餘次數：" + c;
-
-            if (c != 0) {
-                aud.play();
-            }
-
-        };
+    };
 
 
-        function onChangeHandler(val) {
-            all = val;
-            c = all - already;
-            document.getElementById("all").innerHTML = "總次數：" + all;
-            document.getElementById("show").innerHTML = "剩餘次數：" + c;
+    function onChangeHandler(val) {
+        all = val;
+        c = all - already;
+        document.getElementById("all").innerHTML = "總次數：" + all;
+        document.getElementById("show").innerHTML = "剩餘次數：" + c;
 
-            updatedata(all, already)
-        }
+        updatedata(all, already)
+    }
 
-        function onChangeHandler2(val) {
-            already = val
-            c = all - already
+    function onChangeHandler2(val) {
+        already = val
+        c = all - already
 
-            document.getElementById("show").innerHTML = "剩餘次數：" + c;
-            document.getElementById("already").innerHTML = "完成次數：" + already;
+        document.getElementById("show").innerHTML = "剩餘次數：" + c;
+        document.getElementById("already").innerHTML = "完成次數：" + already;
 
-            updatedata(all, already)
-        }
+        updatedata(all, already)
+    }
 
-    </script>
-</body>
-
-</html>
+</script>
+{% endblock %}

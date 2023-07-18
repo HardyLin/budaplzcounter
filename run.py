@@ -1,12 +1,50 @@
-from flask import Flask,render_template,g,jsonify,request
+from flask import Flask,render_template,g,jsonify,request, url_for, redirect, flash
 import sqlite3
 import os
+from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 mp3files="static/budaplz.mp3"
 
 app=Flask(__name__)
+config = app.config
+app.secret_key = config.get('flask', '730713acad5673b116152920fe534dc6')
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.session_protection = "strong"
+login_manager.login_view = 'login'
+login_manager.login_message = '請證明你並非來自黑暗草泥馬界'
 
 DATABASE = "counter.db"
+
+class User(UserMixin):
+    pass
+
+@login_manager.user_loader
+def user_loader(userdata):
+    if userdata not in users:
+        return
+
+    user = User()
+    user.id = userdata
+    return user
+
+@login_manager.request_loader
+def request_loader(request):
+    userdata = request.form.get('user_id')
+    if userdata not in users:
+        return
+
+    user = User()
+    user.id = userdata
+
+    # DO NOT ever store passwords in plaintext and always compare password
+    # hashes using constant-time comparison!
+    user.is_authenticated = request.form['password'] == users[userdata]['password']
+
+    return user
+
+users = {'root': {'password': '123456'}}
+
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -35,9 +73,33 @@ def close_connection(exception):
 # def init_db():
 #     if not os.path.isfile(DATABASE):
 
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'GET':
+        return render_template("login.html")
+    
+    user = request.form['user_id']
+    if (user in users) and (request.form['password'] == users[user]['password']):
+        user = User()
+        user.id = user
+        login_user(user)
+        flash(f'你好{user}!')
 
+        return redirect(url_for('home'))
+    else:
+        print(487878)
+        flash('登入失敗了...')
+        return render_template('login.html')
+
+@app.route('/logout')
+def logout():
+    userdata = current_user.get_id()
+    logout_user()
+    flash(f'{userdata}！謝謝今天的練習！')
+    return render_template('login.html')
 
 @app.route('/')
+# @login_required
 def home():
     defaultData = query_db('select * from counterrecord')[-1]
     print(defaultData)
