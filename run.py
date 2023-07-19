@@ -1,7 +1,9 @@
-from flask import Flask,render_template,g,jsonify,request, url_for, redirect, flash
+from flask import current_app,Flask,render_template,g,jsonify,request, url_for, redirect, flash
 import sqlite3
 import os
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
+from flask.cli import with_appcontext
+from flask_oauthlib.client import OAuth
 
 mp3files="static/budaplz.mp3"
 
@@ -16,6 +18,10 @@ login_manager.login_view = 'login'
 login_manager.login_message = '請證明你並非來自黑暗草泥馬界'
 
 DATABASE = "counter.db"
+#twitch oauth
+# 
+#==============
+
 
 class User(UserMixin):
     pass
@@ -51,12 +57,6 @@ def get_db():
     db = getattr(g, '_database', None)
     if db is None:
         db = g._database = sqlite3.connect(DATABASE)
-        # Enable foreign key check
-        db.execute("PRAGMA foreign_keys = ON")
-        db.execute('CREATE TABLE IF NOT EXISTS counterrecord('
-               'id INTEGER PRIMARY KEY AUTOINCREMENT, '
-               'targetnum INTEGER DEFAULT 0 NOT NULL, '
-               'finishednum INTEGER DEFAULT 0 NOT NULL)')
     return db
 
 def query_db(query, args=(), one=False):
@@ -71,8 +71,13 @@ def close_connection(exception):
     if db is not None:
         db.close()
 
-# def init_db():
-#     if not os.path.isfile(DATABASE):
+def init_db():
+    with app.app_context():
+        db = get_db()
+        with app.open_resource('schema.sql', mode='r') as f:
+            db.cursor().executescript(f.read())
+        db.commit()
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -99,16 +104,20 @@ def logout():
     return render_template('login.html')
 
 @app.route('/')
-@login_required
+# @login_required
 def home():
-    return render_template("index.html")
+    #select all user's item.
+    userdata = current_user.get_id()
+    items = query_db('select * from item where id = ?',(userdata,))
+    return render_template("index.html",items=items)
 
 @app.route('/musiccounter')
 @login_required
 def musiccounter():
-    defaultData = query_db('select * from counterrecord')[-1]
+    defaultData = query_db('select * from item where id = ?',(0,))
     print(defaultData)
-    return render_template("counter.html",mp3files=mp3files,targetnum = defaultData[1],finishednum = defaultData[2])
+    # return render_template("counter.html",mp3files=mp3files,targetnum = defaultData[1],finishednum = defaultData[2])
+    return render_template("counter.html")
 
 @app.route('/changetargetnum',methods=['POST'])
 def changetargetnum_api():
@@ -130,3 +139,4 @@ def changefinishednum_api():
 
 if __name__ == '__main__':
     app.run(debug=True)
+    
