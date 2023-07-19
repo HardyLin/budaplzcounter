@@ -101,6 +101,11 @@ def logout():
 @app.route('/')
 @login_required
 def home():
+    return render_template("index.html")
+
+@app.route('/musiccounter')
+@login_required
+def musiccounter():
     defaultData = query_db('select * from counterrecord')[-1]
     print(defaultData)
     return render_template("counter.html",mp3files=mp3files,targetnum = defaultData[1],finishednum = defaultData[2])

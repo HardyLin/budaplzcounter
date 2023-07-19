@@ -1,11 +1,6 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container " style="background-color:#c9e0f0">
-    <div class="row">
-        <div class="col-sm-6 mx-auto d-flex justify-content-center">
-            <audio id="myaudio" src="{{mp3files}}" controls="controls"></audio>
-        </div>
-    </div>
 
     <div class="row">
         <div class="col-sm-6 mx-auto d-flex justify-content-center">
@@ -25,6 +20,12 @@
         </div>
     </div>
 
+    <div class="row">
+        <div class="col-sm-6 mx-auto d-flex justify-content-center">
+            <audio id="myaudio" src="{{mp3files}}" controls="controls"></audio>
+        </div>
+    </div>
+    
     <div class="row">
         <div class="col-sm-6 mx-auto d-flex justify-content-center">
             <label>目標次數設定</label>
