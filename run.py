@@ -2,8 +2,7 @@ from flask import current_app,Flask,render_template,g,jsonify,request, url_for, 
 import sqlite3
 import os
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
-from flask.cli import with_appcontext
-from flask_oauthlib.client import OAuth
+import requests
 
 mp3files="static/budaplz.mp3"
 
@@ -82,7 +81,29 @@ def init_db():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'GET':
-        return render_template("login.html")
+        errorReason = request.args.get('error')
+        code = request.args.get('code')
+        scope = request.args.get('scope')
+        state = request.args.get('state')
+        if errorReason is not None:
+            return render_template("login.html")
+        elif code is not None:
+            url = 'https://id.twitch.tv/oauth2/token'
+            myobj = {
+                'client_id':'45c2yhxzp8cr8m3p9g9eiuqvqf0ukf',
+                'client_secret':'ztg5d71akqjrgrqazgl74rrmrsdz7r',
+                'code':code,
+                'grant_type':'authorization_code',
+                'redirect_uri':'http://localhost:5000/login'
+            }
+
+            x = requests.post(url, data = myobj)
+            print(x.text)
+        else:
+            return render_template("login.html")
+        
+        
+        
     
     userdata = request.form['user_id']
     if (userdata in users) and (request.form['password'] == users[userdata]['password']):
