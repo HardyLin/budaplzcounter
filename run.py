@@ -27,17 +27,27 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def user_loader(userdata):
-    if userdata not in users:
-        return
-
-    user = User()
-    user.id = userdata
-    return user
+    print(userdata)
+    if userdata in users:
+        user = User()
+        user.id = userdata
+        return user
+    else:
+        validateResult = requests.get('https://api.twitch.tv/helix/users', headers = {'Authorization': f'OAuth {userdata}'})
+        print(validateResult.text)
+        if validateResult.status_code == 200:
+            user = User()
+            user.id = userdata
+            return user
+    return
+    
 
 @login_manager.request_loader
 def request_loader(request):
+    print('request_loader')
     userdata = request.form.get('user_id')
     if userdata not in users:
+
         return
 
     user = User()
@@ -88,8 +98,8 @@ def login():
         if errorReason is not None:
             return render_template("login.html")
         elif code is not None:
-            url = 'https://id.twitch.tv/oauth2/token'
-            myobj = {
+            oauth2Url = 'https://id.twitch.tv/oauth2/token'
+            oauth2Obj = {
                 'client_id':'45c2yhxzp8cr8m3p9g9eiuqvqf0ukf',
                 'client_secret':'ztg5d71akqjrgrqazgl74rrmrsdz7r',
                 'code':code,
@@ -97,24 +107,36 @@ def login():
                 'redirect_uri':'http://localhost:5000/login'
             }
 
-            x = requests.post(url, data = myobj)
-            print(x.text)
+            oauth2Data = requests.post(oauth2Url, data = oauth2Obj)
+            oauth2Json = oauth2Data.json()
+            access_token = oauth2Json['access_token']
+            print(oauth2Json)
+            userData = requests.get('https://api.twitch.tv/helix/users', headers = {'Authorization': f'Bearer {access_token}','Client-ID':f'{oauth2Obj["client_id"]}'})
+            userDataJson = userData.json()
+            print(userDataJson)
+            user = User()
+            user.id = access_token
+            login_user(user)
+            flash(f'{userDataJson["data"][0]["display_name"]}！歡迎加入草泥馬訓練家的行列！')
+            print(123456)
+            return redirect(url_for('home'))
         else:
             return render_template("login.html")
         
         
-        
-    
-    userdata = request.form['user_id']
-    if (userdata in users) and (request.form['password'] == users[userdata]['password']):
-        user = User()
-        user.id = userdata
-        login_user(user)
-        flash(f'{userdata}！歡迎加入草泥馬訓練家的行列！')
-        return redirect(url_for('home'))
+    if request.form: 
+        userdata = request.form['user_id']
+        if (userdata in users) and (request.form['password'] == users[userdata]['password']):
+            user = User()
+            user.id = userdata
+            login_user(user)
+            flash(f'{userdata}！歡迎加入草泥馬訓練家的行列！')
+            return redirect(url_for('home'))
 
-    flash('登入失敗了...')
+        flash('登入失敗了...')
+        return render_template('login.html')
     return render_template('login.html')
+
 
 @app.route('/logout')
 @login_required
@@ -125,7 +147,7 @@ def logout():
     return render_template('login.html')
 
 @app.route('/')
-# @login_required
+@login_required
 def home():
     #select all user's item.
     userdata = current_user.get_id()
