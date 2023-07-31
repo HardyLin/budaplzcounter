@@ -46,18 +46,23 @@ def user_loader(userdata):
 def request_loader(request):
     print('request_loader')
     userdata = request.form.get('user_id')
-    if userdata not in users:
+    if userdata in users:
+        user = User()
+        user.id = userdata
 
-        return
-
-    user = User()
-    user.id = userdata
-
-    # DO NOT ever store passwords in plaintext and always compare password
-    # hashes using constant-time comparison!
-    user.is_authenticated = request.form['password'] == users[userdata]['password']
-
-    return user
+        # DO NOT ever store passwords in plaintext and always compare password
+        # hashes using constant-time comparison!
+        user.is_authenticated = request.form['password'] == users[userdata]['password']
+        return user
+    else:
+        validateResult = requests.get('https://api.twitch.tv/helix/users', headers = {'Authorization': f'OAuth {userdata}'})
+        print(validateResult.text)
+        if validateResult.status_code == 200:
+            user = User()
+            user.id = userdata
+            user.is_authenticated = True
+            return user
+    return 
 
 users = {'root': {'password': '123456'}}
 
@@ -104,7 +109,7 @@ def login():
                 'client_secret':'ztg5d71akqjrgrqazgl74rrmrsdz7r',
                 'code':code,
                 'grant_type':'authorization_code',
-                'redirect_uri':'http://localhost:5000/login'
+                'redirect_uri':'http://localhost:5000/webhook'
             }
 
             oauth2Data = requests.post(oauth2Url, data = oauth2Obj)
@@ -180,6 +185,15 @@ def changefinishednum_api():
     db.commit()
     return jsonify({'status':'updated'})
 
+@app.route('/webhook', methods=['POST','GET'])
+def webhook():
+    if request.method == 'POST':
+        print("Data received from Webhook is: ", request.json)
+        return "POST Webhook received!"
+    elif request.method == 'GET':
+        print("Data received from Webhook is: ", request.json)
+        return "GET Webhook received!"
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True,ssl_context ='adhoc')
     
