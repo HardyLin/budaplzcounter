@@ -189,11 +189,13 @@ def changefinishednum_api():
 def webhook():
     if request.method == 'POST':
         print("Data received from Webhook is: ", request.json)
-        return "POST Webhook received!"
+        return f"POST Webhook received!  {request.json}"
     elif request.method == 'GET':
         print("Data received from Webhook is: ", request.json)
-        return "GET Webhook received!"
+        return "GET Webhook received! {request.json}"
 
 if __name__ == '__main__':
-    app.run(debug=True,ssl_context ='adhoc')
+    app.run(debug=False)
+
+    application = app
     

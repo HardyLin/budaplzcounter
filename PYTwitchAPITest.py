@@ -22,8 +22,8 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.types import AuthScope
 import asyncio
 
-TARGET_USERNAME = 'awaler0215'
-EVENTSUB_URL = 'https://127.0.0.1:5000/webhook'
+TARGET_USERNAME = 'awalker0215'
+EVENTSUB_URL = 'https://www.awalkerservice.tw/webhook'
 APP_ID = '45c2yhxzp8cr8m3p9g9eiuqvqf0ukf'
 APP_SECRET = 'ztg5d71akqjrgrqazgl74rrmrsdz7r'
 TARGET_SCOPES = [AuthScope.MODERATOR_READ_FOLLOWERS]
