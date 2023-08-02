@@ -56,7 +56,7 @@ async def eventsub_example():
     # subscribing to the desired eventsub hook for our user
     # the given function (in this example on_follow) will be called every time this event is triggered
     # the broadcaster is a moderator in their own channel by default so specifying both as the same works in this example
-    await event_sub.listen_channel_follow_v2(user.id, user.id, on_follow)
+    # await event_sub.listen_channel_follow_v2(user.id, user.id, on_follow)
 
     # eventsub will run in its own process
     # so lets just wait for user input before shutting it all down again
