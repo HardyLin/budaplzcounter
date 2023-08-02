@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+    <img id= "profile_image_url" src="" alt="head">
+    <script>
+        var data = {{data|tojson}};
+        document.getElementById("profile_image_url").src = data['profile_image_url'];
+
+        let socket = new WebSocket("wss://pubsub-edge.twitch.tv");
+
+        ws.onopen = function(){
+            //Subscribe to the channel
+            ws.send(JSON.stringify({
+                "type": "LISTEN",
+                "nonce": "44h1k13746815ab1r2",
+                "data": {
+                    "topics": ["channel-bits-events-v1.44322889"],
+                "auth_token": "cfabdegwdoklmawdzdo98xt2fo512y"
+                }
+            }))
+        } 
+    </script>
+</body>
+</html>

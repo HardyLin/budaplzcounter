@@ -22,8 +22,8 @@ from twitchAPI.oauth import UserAuthenticator
 from twitchAPI.types import AuthScope
 import asyncio
 
-TARGET_USERNAME = 'awaler0215'
-EVENTSUB_URL = 'https://127.0.0.1:5000/webhook'
+TARGET_USERNAME = 'ycc3741'
+EVENTSUB_URL = 'https://www.awalkerservice.tw/webhook'
 APP_ID = '45c2yhxzp8cr8m3p9g9eiuqvqf0ukf'
 APP_SECRET = 'ztg5d71akqjrgrqazgl74rrmrsdz7r'
 TARGET_SCOPES = [AuthScope.MODERATOR_READ_FOLLOWERS]
@@ -56,7 +56,7 @@ async def eventsub_example():
     # subscribing to the desired eventsub hook for our user
     # the given function (in this example on_follow) will be called every time this event is triggered
     # the broadcaster is a moderator in their own channel by default so specifying both as the same works in this example
-    await event_sub.listen_channel_follow_v2(user.id, user.id, on_follow)
+    # await event_sub.listen_channel_follow_v2(user.id, user.id, on_follow)
 
     # eventsub will run in its own process
     # so lets just wait for user input before shutting it all down again
