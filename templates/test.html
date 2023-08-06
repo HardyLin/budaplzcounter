@@ -8,22 +8,43 @@
 <body>
     <img id= "profile_image_url" src="" alt="head">
     <script>
+        function randomString(length) {
+            var text = "";
+            var possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+            for(var i = 0; i < length; i++) {
+                text += possible.charAt(Math.floor(Math.random() * possible.length));
+            }
+            return text;
+        }
+
         var data = {{data|tojson}};
         document.getElementById("profile_image_url").src = data['profile_image_url'];
 
-        let socket = new WebSocket("wss://pubsub-edge.twitch.tv");
-
+        let ws = new WebSocket("wss://pubsub-edge.twitch.tv");
+        // let bitChannel = "channel-bits-events-v2."+data['id'];
+        let bitChannel = "channel-bits-events-v2.142813292";
         ws.onopen = function(){
             //Subscribe to the channel
             ws.send(JSON.stringify({
                 "type": "LISTEN",
-                "nonce": "44h1k13746815ab1r2",
+                "nonce": randomString(18),
                 "data": {
-                    "topics": ["channel-bits-events-v1.44322889"],
-                "auth_token": "cfabdegwdoklmawdzdo98xt2fo512y"
+                    "topics": [bitChannel],
+                "auth_token": "{{access_token}}"
                 }
             }))
-        } 
+        }
+        ws.onmessage = function(event){
+            let message = JSON.parse(event.data);
+            console.log(message);
+            if(message.type == "MESSAGE"){
+                let data = JSON.parse(message.data.message);
+                console.log(data);
+                if(data.data.bits_used == 100){
+                    console.log("100 bits used");
+                }
+            }
+        }
     </script>
 </body>
 </html>
