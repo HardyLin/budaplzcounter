@@ -33,11 +33,11 @@ def game():
             oauth2Data = requests.post(oauth2Url, data = oauth2Obj)
             oauth2Json = oauth2Data.json()
             access_token = oauth2Json['access_token']
-            print(oauth2Json)
-            userData = requests.get('https://api.twitch.tv/helix/users', headers = {'Authorization': f'Bearer {access_token}','Client-ID':f'{oauth2Obj["client_id"]}'})
-            userDataJson = userData.json()['data'][0]
-            print(userDataJson)
-            return render_template('test.html',data=userDataJson)
+            # print(oauth2Json)
+            # userData = requests.get('https://api.twitch.tv/helix/users', headers = {'Authorization': f'Bearer {access_token}','Client-ID':f'{oauth2Obj["client_id"]}'})
+            # userDataJson = userData.json()['data'][0]
+            # print(userDataJson)
+            # return render_template('test.html',data=userDataJson)
     return 'ERROR'
 
 @app.route('/result')
